@@ -1,0 +1,18 @@
+Maxim Gorshkov (260397155)
+James McCorriston (260409387)
+Andrew Borodovski (260413685)
+
+Cluster Size
+5 nodes
+
+Number of MapReduce Jobs
+2
+
+Running Times
+Job 1 - 5min 30sec
+Job 2 - 1min 5sec
+Total running time - 7min 2sec
+
+Number of Reduce Tasks
+Job 1 - 1
+Job 2 - 1

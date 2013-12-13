@@ -1,0 +1,864 @@
+-- Group 30
+--Andrew Borodovski - 260413685
+--James McCorriston - 260409387
+--Maxim Gorshkov - 260397155
+
+--The tables
+create table Player (pid int not null primary key, gender char(1) not null, lname varchar(25) not null, fname varchar(25) not null, address varchar(100) not null, phonenumber char(10) not null, email varchar(50) not null, birthday date not null, datecreated date not null)
+create table Captain (cptnid int not null primary key, foreign key (cptnid) references Player (pid) on delete cascade, baddress varchar(100) not null, cardnumber char(16) not null, cardholder varchar(50) not null, carddate date not null, cardtype varchar(25) not null)
+create table Coordinator (cid int not null primary key, gender char(1) not null, lname varchar(25) not null, fname varchar(25) not null, address varchar(100) not null, phonenumber char(10) not null, email varchar(50) not null, birthday date not null, datecreated date not null, yearlysal int not null)
+create table Official (oid int not null primary key, gender char(1) not null, lname varchar(25) not null, fname varchar(25) not null, address varchar(100) not null, phonenumber char(10) not null, email varchar(50) not null, birthday date not null, datecreated date not null, hourlysal int not null)
+create table League (sport varchar(30) not null, llevel varchar(3) not null, minplayers int not null, maxplayers int not null, minteams int not null, primary key (sport, llevel))
+create table Season (syear int not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (sport, llevel) references League (sport, llevel) on delete cascade, regdeadline date not null, maxteams int not null, primary key (syear, sport, llevel))
+create table Team (name varchar(30) not null, syear int not null, sport varchar(30) not null, llevel varchar(3) not null, primary key (name, syear, sport, llevel), foreign key(syear, sport, llevel) references Season(syear, sport, llevel) on delete cascade)
+create table Game (gtime time not null, gdate date not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (sport, llevel) references League (sport, llevel) on delete cascade, primary key (gtime, gdate, sport, llevel))
+create table Announcement (msgid int not null primary key, msg varchar(1000) not null, sent date not null)
+create table Sends (msgid int not null, foreign key (msgid) references Announcement (msgid) on delete cascade, cid int not null, foreign key (cid) references Coordinator (cid) on delete cascade, primary key (msgid, cid))
+create table Receives (msgid int not null, foreign key (msgid) references Announcement (msgid) on delete cascade, cptnid int not null, foreign key (cptnid) references Captain (cptnid) on delete cascade, primary key (msgid, cptnid))
+create table HasTeams (gtime time not null, gdate date not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (gtime, gdate, sport, llevel) references Game(gtime, gdate, sport, llevel) on delete cascade, name1 varchar(30) not null, syear1 int not null, sport1 varchar(30) not null, llevel1 char(3) not null, foreign key (name1, syear1, sport1, llevel1) references Team (name, syear, sport, llevel) on delete cascade, name2 varchar(30) not null, syear2 int not null, sport2 varchar(30) not null, llevel2 char(3) not null, foreign key (name2, syear2, sport2, llevel2) references Team (name, syear, sport, llevel) on delete cascade, primary key (gdate, gtime, sport, llevel, name1, syear1, sport1, llevel1, name2, syear2, sport2, llevel2))
+create table PlaysFor (pid int not null, foreign key (pid) references Player (pid) on delete cascade, name varchar(30) not null, syear int not null, sport varchar(30) not null, llevel char(3) not null, foreign key (name, syear, sport, llevel) references Team (name, syear, sport, llevel) on delete cascade, primary key (pid, name, syear, sport, llevel))
+create table Creates (cid int not null, foreign key (cid) references Coordinator (cid) on delete cascade, syear int not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (syear, sport, llevel) references Season (syear, sport, llevel) on delete cascade, primary key (cid, syear, sport, llevel))
+create table Registers (cptnid int not null, foreign key (cptnid) references Captain (cptnid) on delete cascade, name varchar(30) not null, syear int not null, sport varchar(30) not null, llevel char(3) not null, foreign key (name, syear, sport, llevel) references Team (name, syear, sport, llevel) on delete cascade, cost int not null, primary key (name, syear, sport, llevel))
+create table Officiates (oid int not null, gtime time not null, gdate date not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (gtime, gdate, sport, llevel) references Game(gtime, gdate, sport, llevel) on delete cascade, role varchar(20) not null, primary key (oid, gdate, gtime, sport, llevel))
+--Table descriptions
+describe table Player
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+PID                            SYSIBM    INTEGER                   4     0 No    
+GENDER                         SYSIBM    CHARACTER                 1     0 No    
+LNAME                          SYSIBM    VARCHAR                  25     0 No    
+FNAME                          SYSIBM    VARCHAR                  25     0 No    
+ADDRESS                        SYSIBM    VARCHAR                 100     0 No    
+PHONENUMBER                    SYSIBM    CHARACTER                10     0 No    
+EMAIL                          SYSIBM    VARCHAR                  50     0 No    
+BIRTHDAY                       SYSIBM    DATE                      4     0 No    
+DATECREATED                    SYSIBM    DATE                      4     0 No    
+
+  9 record(s) selected.
+describe table Captain
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+CPTNID                         SYSIBM    INTEGER                   4     0 No    
+BADDRESS                       SYSIBM    VARCHAR                 100     0 No    
+CARDNUMBER                     SYSIBM    CHARACTER                16     0 No    
+CARDHOLDER                     SYSIBM    VARCHAR                  50     0 No    
+CARDDATE                       SYSIBM    DATE                      4     0 No    
+CARDTYPE                       SYSIBM    VARCHAR                  25     0 No    
+
+  6 record(s) selected.
+
+
+describe table Coordinator
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+CID                            SYSIBM    INTEGER                   4     0 No    
+GENDER                         SYSIBM    CHARACTER                 1     0 No    
+LNAME                          SYSIBM    VARCHAR                  25     0 No    
+FNAME                          SYSIBM    VARCHAR                  25     0 No    
+ADDRESS                        SYSIBM    VARCHAR                 100     0 No    
+PHONENUMBER                    SYSIBM    CHARACTER                10     0 No    
+EMAIL                          SYSIBM    VARCHAR                  50     0 No    
+BIRTHDAY                       SYSIBM    DATE                      4     0 No    
+DATECREATED                    SYSIBM    DATE                      4     0 No    
+YEARLYSAL                      SYSIBM    INTEGER                   4     0 No    
+
+  10 record(s) selected.
+
+
+describe table Official
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+OID                            SYSIBM    INTEGER                   4     0 No    
+GENDER                         SYSIBM    CHARACTER                 1     0 No    
+LNAME                          SYSIBM    VARCHAR                  25     0 No    
+FNAME                          SYSIBM    VARCHAR                  25     0 No    
+ADDRESS                        SYSIBM    VARCHAR                 100     0 No    
+PHONENUMBER                    SYSIBM    CHARACTER                10     0 No    
+EMAIL                          SYSIBM    VARCHAR                  50     0 No    
+BIRTHDAY                       SYSIBM    DATE                      4     0 No    
+DATECREATED                    SYSIBM    DATE                      4     0 No    
+HOURLYSAL                      SYSIBM    INTEGER                   4     0 No    
+
+  10 record(s) selected.
+
+
+describe table League
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+MINPLAYERS                     SYSIBM    INTEGER                   4     0 No    
+MAXPLAYERS                     SYSIBM    INTEGER                   4     0 No    
+MINTEAMS                       SYSIBM    INTEGER                   4     0 No    
+
+  5 record(s) selected.
+
+
+describe table Season
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+SYEAR                          SYSIBM    INTEGER                   4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+REGDEADLINE                    SYSIBM    DATE                      4     0 No    
+MAXTEAMS                       SYSIBM    INTEGER                   4     0 No    
+
+  5 record(s) selected.
+
+
+describe table Team
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+NAME                           SYSIBM    VARCHAR                  30     0 No    
+SYEAR                          SYSIBM    INTEGER                   4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+
+  4 record(s) selected.
+
+
+describe table Game
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+GTIME                          SYSIBM    TIME                      3     0 No    
+GDATE                          SYSIBM    DATE                      4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+
+  4 record(s) selected.
+
+
+describe table Announcement
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+MSGID                          SYSIBM    INTEGER                   4     0 No    
+MSG                            SYSIBM    VARCHAR                1000     0 No    
+SENT                           SYSIBM    DATE                      4     0 No    
+
+  3 record(s) selected.
+
+
+describe table Sends
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+MSGID                          SYSIBM    INTEGER                   4     0 No    
+CID                            SYSIBM    INTEGER                   4     0 No    
+
+  2 record(s) selected.
+
+
+describe table Receives
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+MSGID                          SYSIBM    INTEGER                   4     0 No    
+CPTNID                         SYSIBM    INTEGER                   4     0 No    
+
+  2 record(s) selected.
+
+describe table HasTeams
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+GTIME                          SYSIBM    TIME                      3     0 No    
+GDATE                          SYSIBM    DATE                      4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+NAME1                          SYSIBM    VARCHAR                  30     0 No    
+SYEAR1                         SYSIBM    INTEGER                   4     0 No    
+SPORT1                         SYSIBM    VARCHAR                  30     0 No    
+LLEVEL1                        SYSIBM    CHARACTER                 3     0 No    
+NAME2                          SYSIBM    VARCHAR                  30     0 No    
+SYEAR2                         SYSIBM    INTEGER                   4     0 No    
+SPORT2                         SYSIBM    VARCHAR                  30     0 No    
+LLEVEL2                        SYSIBM    CHARACTER                 3     0 No    
+
+  12 record(s) selected.
+
+  
+describe table PlaysFor
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+PID                            SYSIBM    INTEGER                   4     0 No    
+NAME                           SYSIBM    VARCHAR                  30     0 No    
+SYEAR                          SYSIBM    INTEGER                   4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    CHARACTER                 3     0 No    
+
+  5 record(s) selected.
+
+
+describe table Creates
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+CID                            SYSIBM    INTEGER                   4     0 No    
+SYEAR                          SYSIBM    INTEGER                   4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+
+  4 record(s) selected.
+
+
+describe table Registers
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+CPTNID                         SYSIBM    INTEGER                   4     0 No    
+NAME                           SYSIBM    VARCHAR                  30     0 No    
+SYEAR                          SYSIBM    INTEGER                   4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    CHARACTER                 3     0 No    
+COST                           SYSIBM    INTEGER                   4     0 No    
+
+  6 record(s) selected.
+
+  describe table officiates
+
+Column                         Type      Type
+name                           schema    name               Length   Scale Nulls
+------------------------------ --------- ------------------ -------- ----- ------
+OID                            SYSIBM    INTEGER                   4     0 No    
+GTIME                          SYSIBM    TIME                      3     0 No    
+GDATE                          SYSIBM    DATE                      4     0 No    
+SPORT                          SYSIBM    VARCHAR                  30     0 No    
+LLEVEL                         SYSIBM    VARCHAR                   3     0 No    
+ROLE                           SYSIBM    VARCHAR                  20     0 No    
+
+  6 record(s) selected.
+
+--Five insert statements
+insert into Player values (260409387, 'm', 'McCorriston', 'Jamie', '29 Rue Bagg, Montreal, Quebec', '5148934050', 'ploo432@hotmail.com', '1992-07-22', '2010-02-14')
+DB20000I  The SQL command completed successfully.
+
+insert into Player values (260413685, 'm', 'Borodovski', 'Andrew', '3678 Ave Drummond, Montreal, Quebec', '5064556072', 'andrewisdaman@yandex.ru', '1992-02-21', '2013-02-14')
+DB20000I  The SQL command completed successfully.
+
+insert into Player values (260402399, 'm', 'Gorshkov', 'Maxim', '456 Ave Pins O, Montreal, Quebec', '5148825726', 'maxim.gorshkov@gmail.com', '1992-06-17', '2013-02-15')
+DB20000I  The SQL command completed successfully.
+
+insert into Player values (260457690, 'f', 'Kwan', 'Saskia', '3545 Ave Durocher, Montreal, Quebec', '5142237654', 'skwan@yahoo.com', '1992-12-08', '2009-02-15')
+DB20000I  The SQL command completed successfully.
+
+insert into Player values (260411234, 'm', 'Wright', 'William', '456 Ave Pins O, Montreal, Quebec', '5147978866', 'lunchy01@gmail.com', '1992-04-17', '2013-02-15')
+DB20000I  The SQL command completed successfully.
+
+--The resulting table
+select * from player
+
+PID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- -----------
+  260409387 m      McCorriston               Jamie                     29 Rue Bagg, Montreal, Quebec                                                                        5148934050  ploo432@hotmail.com                                07/22/1992 02/14/2010 
+  260413685 m      Borodovski                Andrew                    3678 Ave Drummond, Montreal, Quebec                                                                  5064556072  andrewisdaman@yandex.ru                            02/21/1992 02/14/2013 
+  260402399 m      Gorshkov                  Maxim                     456 Ave Pins O, Montreal, Quebec                                                                     5148825726  maxim.gorshkov@gmail.com                           06/17/1992 02/15/2013 
+  260457690 f      Kwan                      Saskia                    3545 Ave Durocher, Montreal, Quebec                                                                  5142237654  skwan@yahoo.com                                    12/08/1992 02/15/2009 
+  260411234 m      Wright                    William                   456 Ave Pins O, Montreal, Quebec                                                                     5147978866  lunchy01@gmail.com                                 04/17/1992 02/15/2013 
+
+  5 record(s) selected.
+  
+--The rest of the tables
+select * from Player
+
+PID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- -----------
+  260409387 m      McCorriston               Jamie                     29 Rue Bagg, Montreal, Quebec                                                                        5148934050  ploo432@hotmail.com                                07/22/1992 02/14/2010 
+  260413685 m      Borodovski                Andrew                    3678 Ave Drummond, Montreal, Quebec                                                                  5064556072  andrewisdaman@yandex.ru                            02/21/1992 02/14/2013 
+  260402399 m      Gorshkov                  Maxim                     456 Ave Pins O, Montreal, Quebec                                                                     5148825726  maxim.gorshkov@gmail.com                           06/17/1992 02/15/2013 
+  260457690 f      Kwan                      Saskia                    3545 Ave Durocher, Montreal, Quebec                                                                  5142237654  skwan@yahoo.com                                    12/08/1992 02/15/2009 
+  260411234 m      Wright                    William                   456 Ave Pins O, Montreal, Quebec                                                                     5147978866  lunchy01@gmail.com                                 04/17/1992 02/15/2013 
+  260415332 m      Reed                      Connor                    900 Ave Sherbrooke, Montreal, Quebec                                                                 5144768900  creed@hotmail.com                                  06/01/1992 02/15/2013 
+  260444112 f      Gerner                    Teresa                    3545 Ave Durocher,Montreal, Quebec                                                                   5142204321  ilovesoccer@hotmail.com                            01/15/1992 02/15/2006 
+  260479834 f      Campbell                  Carolyn                   3515 Ave Durocher, Montreal, Quebec                                                                  5146687333  ccampbell@yahoo.com                                06/30/1992 02/15/2013 
+  260403842 m      Silver                    Alec                      29 Rue Bagg, Montreal, Quebec                                                                        5145768991  barhawkobama@msn.com                               12/08/1991 02/16/2008 
+  260414521 m      Bourne                    Jason                     29 Rue Bagg, Montreal, Quebec
+  
+select * from Captain
+
+CPTNID      BADDRESS                                                                                             CARDNUMBER       CARDHOLDER                                         CARDDATE   CARDTYPE                 
+----------- ---------------------------------------------------------------------------------------------------- ---------------- -------------------------------------------------- ---------- -------------------------
+  260409387 29 Rue Bagg, Montreal, Quebec                                                                        4605678923435465 Jamie McCorriston                                  05/31/2015 Visa                     
+  260403842 29 Rue Bagg, Montreal, Quebec                                                                        2456837490185768 Alec Silver                                        06/30/2014 Mastercard               
+  260457690 3545 Ave Durocher, Montreal, Quebec                                                                  2223847596047385 Saskia Kwan                                        03/31/2015 Visa                     
+  260411234 456 Ave Pins O, Montreal, Quebec                                                                     7600596847384456 William Wright                                     07/31/2015 Mastercard               
+  260413685 16 Main St, St. John, New Brunswick                                                                  1009324845612384 Vad Borodovski                                     08/31/2014 Visa                     
+
+  5 record(s) selected.
+  
+select * from Coordinator
+
+CID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED YEARLYSAL  
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- ----------- -----------
+     540023 m      Karnofsky                 Perry                     3915 Ave St. Denis, Montreal, Quebec                                                                 5143982600  perry.karnofsky@mcgill.ca                          05/03/1976 02/16/2013        64000
+     543451 m      Pantonella                Marco                     3701 Ave St. Urbain, Montreal, Quebec                                                                5143982408  marco.pantonella@mcgill.ca                         11/21/1985 02/16/2013        36000
+     548927 f      Smith                     Mary                      4344 Ave Parc, Montreal, Quebec                                                                      5143982791  smith.mary@mcgill.ca                               09/06/1967 02/16/2013        62000
+
+  3 record(s) selected.
+  
+select * from Official
+
+OID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED HOURLYSAL  
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- ----------- -----------
+     336791 m      Kibler                    McKenzie                  3542 Rue Aylmer, Montreal, Quebec                                                                    5142349056  mckenziek@hotmail.com                              07/24/1993 02/16/2013           10
+     325471 f      Johnson                   Shannon                   3616 Rue Aylmer, Montreal, Quebec                                                                    5144381984  hockey.king@hotmail.com                            09/13/1994 02/16/2013           12
+     310934 m      Strauss                   Daniel                    3610 Rue Durocher, Montreal, Quebec                                                                  5141931456  hapinessrox@gmail.com                              02/28/1993 02/16/2013           10
+     335993 f      Goldman                   Katherine                 900 Ave Sherbrooke, Montreal, Quebec                                                                 5149881423  argylelyfe@yahoo.com                               01/12/1990 02/16/2013           14
+     336453 m      Jones                     Brandon                   514 Ave Pins O, Montreal, Quebec                                                                     5149181044  primatechallenge@ultimategames.ca                  08/11/1989 02/16/2013           16
+     322002 f      Saleh                     Zara                      3616 Rue Aylmer, Montreal, Quebec                                                                    5149241094  computerwiz99@yandex.ru                            02/21/1993 02/16/2013           12
+
+  6 record(s) selected.
+  
+select * from League
+
+SPORT                          LLEVEL MINPLAYERS  MAXPLAYERS  MINTEAMS   
+------------------------------ ------ ----------- ----------- -----------
+Ice Hockey                     MC               6          20           8
+Ice Hockey                     MB               6          20           8
+Ice Hockey                     CRD              6          20           8
+2v2 Soccer                     MB               2           6           4
+2v2 Soccer                     CRA              2           6           4
+2v2 Soccer                     WB               2           6           4
+Innertube Water Polo           CRB              7          20           8
+Indoor Soccer                  WB               5          16           8
+Innertube Water Polo           CRA              7          20           8
+
+  9 record(s) selected.
+  
+select * from Season
+  
+SYEAR       SPORT                          LLEVEL REGDEADLINE MAXTEAMS   
+----------- ------------------------------ ------ ----------- -----------
+       2012 Ice Hockey                     MC     09/03/2012           26
+       2011 Ice Hockey                     MC     08/31/2011           26
+       2012 Ice Hockey                     CRD    09/03/2012           16
+       2011 Ice Hockey                     CRD    08/31/2012           16
+       2013 2v2 Soccer                     MB     02/21/2013           24
+       2012 2v2 Soccer                     MB     01/30/2012           24
+       2013 2v2 Soccer                     CRA    02/21/2013           24
+       2013 2v2 Soccer                     WB     02/21/2013           24
+	   
+select * from Team
+
+NAME                           SYEAR       SPORT                          LLEVEL
+------------------------------ ----------- ------------------------------ ------
+Bar Down                              2013 2v2 Soccer                     CRA   
+Class and Pizzaz                      2011 Innertube Water Polo           CRB   
+Class and Pizzaz                      2013 2v2 Soccer                     CRA   
+Class and Pizzaz                      2013 Innertube Water Polo           CRB   
+Cool Runnings                         2011 Ice Hockey                     MC    
+Cool Runnings                         2012 Ice Hockey                     MC    
+FC Girls                              2013 Indoor Soccer                  WB    
+Far Post                              2012 2v2 Soccer                     MB    
+Far Post                              2013 2v2 Soccer                     MB    
+Goon Squad                            2012 Ice Hockey                     MC    
+
+select * from Game
+
+GTIME    GDATE      SPORT                          LLEVEL
+-------- ---------- ------------------------------ ------
+16:00:00 02/17/2013 Innertube Water Polo           CRA   
+18:00:00 02/17/2013 Innertube Water Polo           CRB   
+18:30:00 03/14/2013 2v2 Soccer                     MB    
+20:00:00 02/17/2013 Innertube Water Polo           CRB   
+20:00:00 02/28/2013 2v2 Soccer                     CRA   
+21:00:00 09/20/2012 Ice Hockey                     MB    
+22:30:00 02/21/2013 Indoor Soccer                  WB    
+
+  7 record(s) selected.
+
+
+select * from Announcement
+
+MSGID       MSG                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      SENT      
+----------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ----------
+    1004560 There was a power outage at the pool this morning, games today will be postponed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        01/17/2013
+    1003279 Playoffs are currently being scheduled and will begin next week.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         02/15/2013
+    1003268 The league registration deadline is next week and the season will begin shortly. - Marco                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 02/13/2013
+    1001499 Congratulations to Peejy Weejy and Friends for winning the playoffs!                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     03/24/2012
+    1002746 Dear captains, your game scheduled for Feb 24th has been rescheduled to Mar 3rd, sorry for the late notice.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              02/21/2013
+    1009999 There was a power outage at the pool, games today will be postponed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     02/17/2013
+
+  6 record(s) selected.
+
+
+select * from Sends
+
+MSGID       CID        
+----------- -----------
+    1001499      548927
+    1002746      543451
+    1003268      543451
+    1003279      540023
+    1004560      548927
+    1009999      548927
+
+  6 record(s) selected.
+
+
+select * from Receives
+
+MSGID       CPTNID     
+----------- -----------
+    1001499   260403842
+    1002746   260409387
+    1002746   260413685
+    1003268   260409387
+    1003268   260411234
+    1003268   260413685
+    1003279   260409387
+    1004560   260403842
+    1004560   260413685
+
+  9 record(s) selected.
+
+
+select * from HasTeams
+
+GTIME    GDATE      SPORT                          LLEVEL NAME1                          SYEAR1      SPORT1                         LLEVEL1 NAME2                          SYEAR2      SPORT2                         LLEVEL2
+-------- ---------- ------------------------------ ------ ------------------------------ ----------- ------------------------------ ------- ------------------------------ ----------- ------------------------------ -------
+21:00:00 09/20/2012 Ice Hockey                     MB     Goon Squad                            2012 Ice Hockey                     MC      Cool Runnings                         2012 Ice Hockey                     MC     
+16:00:00 02/17/2013 Innertube Water Polo           CRA    Team1                                 2013 Innertube Water Polo           CRA     Team2                                 2013 Innertube Water Polo           CRA    
+18:00:00 02/17/2013 Innertube Water Polo           CRB    In The Hole                           2013 Innertube Water Polo           CRB     Class and Pizzaz                      2013 Innertube Water Polo           CRB    
+20:00:00 02/17/2013 Innertube Water Polo           CRB    Marco Pullouts                        2013 Innertube Water Polo           CRB     Class and Pizzaz                      2013 Innertube Water Polo           CRB    
+22:30:00 02/21/2013 Indoor Soccer                  WB     soccority                             2013 Indoor Soccer                  WB      FC Girls                              2013 Indoor Soccer                  WB     
+20:00:00 02/28/2013 2v2 Soccer                     CRA    Bar Down                              2013 2v2 Soccer                     CRA     Class and Pizzaz                      2013 2v2 Soccer                     CRA    
+18:30:00 03/14/2013 2v2 Soccer                     MB     Far Post                              2012 2v2 Soccer                     MB      Pretty in Pink                        2012 2v2 Soccer                     MB     
+
+  7 record(s) selected.
+
+select * from PlaysFor
+
+PID         NAME                           SYEAR       SPORT                          LLEVEL
+----------- ------------------------------ ----------- ------------------------------ ------
+  260409387 Goon Squad                            2012 Ice Hockey                     MC    
+  260415332 Goon Squad                            2012 Ice Hockey                     MC    
+  260409387 Cool Runnings                         2011 Ice Hockey                     MC    
+  260415332 Cool Runnings                         2011 Ice Hockey                     MC    
+  260403842 Thunderhawks                          2012 Ice Hockey                     CRD   
+  260403842 Icetosterone                          2011 Ice Hockey                     CRD   
+  260409387 Far Post                              2013 2v2 Soccer                     MB    
+  260411234 Far Post                              2013 2v2 Soccer                     MB    
+  260413685 Far Post                              2013 2v2 Soccer                     MB    
+  260409387 Far Post                              2012 2v2 Soccer                     MB    
+  260411234 Far Post                              2012 2v2 Soccer                     MB    
+  
+select * from Creates
+
+CID         SYEAR       SPORT                          LLEVEL
+----------- ----------- ------------------------------ ------
+     540023        2011 Ice Hockey                     CRD   
+     540023        2011 Ice Hockey                     MC    
+     540023        2011 Innertube Water Polo           CRB   
+     540023        2012 Ice Hockey                     CRD   
+     540023        2012 Ice Hockey                     MC    
+     543451        2012 2v2 Soccer                     MB    
+     543451        2013 2v2 Soccer                     CRA   
+     543451        2013 2v2 Soccer                     MB    
+     543451        2013 2v2 Soccer                     WB    
+     543451        2013 Indoor Soccer                  WB   
+	 
+select * from Registers	 
+	 
+CPTNID      NAME                           SYEAR       SPORT                          LLEVEL COST       
+----------- ------------------------------ ----------- ------------------------------ ------ -----------
+  260409387 Goon Squad                            2012 Ice Hockey                     MC             850
+  260409387 Cool Runnings                         2011 Ice Hockey                     MC             850
+  260409387 Bar Down                              2013 2v2 Soccer                     CRA             80
+  260413685 Class and Pizzaz                      2013 Innertube Water Polo           CRB            220
+  260413685 Class and Pizzaz                      2013 2v2 Soccer                     CRA             80
+  260403842 Icetosterone                          2011 Ice Hockey                     CRD            850
+  260403842 Marco Pullouts                        2013 Innertube Water Polo           CRB            220
+  
+select * from Officiates
+
+OID         GTIME    GDATE      SPORT                          LLEVEL ROLE                
+----------- -------- ---------- ------------------------------ ------ --------------------
+     336791 21:00:00 09/20/2012 Ice Hockey                     MB     referee             
+     310934 21:00:00 09/20/2012 Ice Hockey                     MB     referee             
+     325471 21:00:00 09/20/2012 Ice Hockey                     MB     timekeeper          
+     322002 18:30:00 03/14/2013 2v2 Soccer                     MB     referee, timekeeper 
+     322002 20:00:00 02/28/2013 2v2 Soccer                     CRA    referee, timekeeper 
+     335993 20:00:00 02/17/2013 Innertube Water Polo           CRB    referee             
+     336453 20:00:00 02/17/2013 Innertube Water Polo           CRB    timekeeper          
+     322002 22:30:00 02/21/2013 Indoor Soccer                  WB     referee             
+     336453 22:30:00 02/21/2013 Indoor Soccer                  WB     timekeeper          
+
+  9 record(s) selected.
+  
+--The queries
+-- Return the name and level of Ice Hockey teams registered in the 2011 season, in alphabetical ordering by level
+select name, llevel from team where sport = 'Ice Hockey' and syear = 2011 order by llevel
+
+NAME                           LLEVEL
+------------------------------ ------
+Icetosterone                   CRD   
+Cool Runnings                  MC    
+
+  2 record(s) selected.
+  
+--Return the PID of males who play soccer, given they were born between june and september
+select player.pid from player inner join playsfor on player.pid = playsfor.pid where (gender = 'm' AND (month(birthday) > 5 and month(birthday) <10) AND (sport = '2v2 Soccer' OR sport = 'Indoor Soccer'))
+
+PID        
+-----------
+  260409387
+  260409387
+  260402399
+
+  3 record(s) selected.
+  
+--Return the record of the coordinator who is paid the most by the organization
+select * from coordinator where yearlysal = (select max(yearlysal) from coordinator)
+
+CID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED YEARLYSAL  
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- ----------- -----------
+     540023 m      Karnofsky                 Perry                     3915 Ave St. Denis, Montreal, Quebec                                                                 5143982600  perry.karnofsky@mcgill.ca                          05/03/1976 02/16/2013        64000
+
+  1 record(s) selected.
+
+--Return the number of teams that have a female captain
+select count(*) from player inner join captain on player.pid = captain.cptnid join playsfor on player.pid = playsfor.pid where (gender = 'f')
+
+1          
+-----------
+          4
+
+  1 record(s) selected.
+
+--Count the number of games which overlap with an officials birthday
+select count(*) from (select month(birthday), day(birthday) from official intersect select month(gdate), day(gdate) from game) i
+
+1          
+-----------
+          2
+
+  1 record(s) selected.
+
+
+--List the games that have a female referee
+select official.oid from official inner join officiates on official.oid = officiates.oid where(gender = 'f' AND role like 'referee%')
+
+
+OID        
+-----------
+     322002
+     322002
+     335993
+     322002
+
+  4 record(s) selected.
+
+  
+--Data modifications
+--Insert Statement
+--Takes all of the players who played for the hockey team Good Squad last year and adds them in for this year as
+--well.
+insert into playsfor (pid, name, syear, sport, llevel) with players (pid, name) as (select pid, name from playsfor where name = 'Goon Squad' and syear = 2012 and sport = 'Ice Hockey' and llevel = 'MC'), newyear(syear) as (select distinct syear from playsfor where syear = 2013), sportlevel(sport, llevel) as (select distinct sport, llevel from playsfor where sport = 'Ice Hockey' and llevel = 'MC') select distinct * from players, newyear, sportlevel 
+
+--The playsfor table before the insert:
+select * from playsfor
+
+PID         NAME                           SYEAR       SPORT                          LLEVEL
+----------- ------------------------------ ----------- ------------------------------ ------
+  260409387 Goon Squad                            2012 Ice Hockey                     MC    
+  260415332 Goon Squad                            2012 Ice Hockey                     MC    
+  260409387 Cool Runnings                         2011 Ice Hockey                     MC    
+  
+  ...
+  
+  260479834 soccority                             2013 Indoor Soccer                  WB    
+  260414521 Class and Pizzaz                      2011 Innertube Water Polo           CRB   
+  260469814 Class and Pizzaz                      2011 Innertube Water Polo           CRB   
+
+  37 record(s) selected.
+  
+--The playsfor table after the insert:
+insert into playsfor (pid, name, syear, sport, llevel) with players (pid, name) as (select pid, name from playsfor where name = 'Goon Squad' and syear = 2012 and sport = 'Ice Hockey' and llevel = 'MC'), newyear(syear) as (select distinct syear from playsfor where syear = 2013), sportlevel(sport, llevel) as (select distinct sport, llevel from playsfor where sport = 'Ice Hockey' and llevel = 'MC') select distinct * from players, newyear, sportlevel
+DB20000I  The SQL command completed successfully.
+
+select * from playsfor
+
+PID         NAME                           SYEAR       SPORT                          LLEVEL
+----------- ------------------------------ ----------- ------------------------------ ------
+  260409387 Goon Squad                            2012 Ice Hockey                     MC    
+  260415332 Goon Squad                            2012 Ice Hockey                     MC    
+  260409387 Cool Runnings                         2011 Ice Hockey                     MC 
+  
+  ...
+  
+  260414521 Class and Pizzaz                      2011 Innertube Water Polo           CRB   
+  260469814 Class and Pizzaz                      2011 Innertube Water Polo           CRB   
+  260409387 Goon Squad                            2013 Ice Hockey                     MC    
+  260415332 Goon Squad                            2013 Ice Hockey                     MC    
+
+  39 record(s) selected.
+  
+--Delete statement
+--Deletes all players who have not played for a team in the last 2 years.
+delete from player where pid in(select player.pid from player, playsfor where player.pid = playsfor.pid except select Player.pid from player, playsfor where player.pid = playsfor.pid and year (current_timestamp) - syear < 2)
+
+--Player table before deletetion:
+select * from player
+
+PID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- -----------
+  260409387 m      McCorriston               Jamie                     29 Rue Bagg, Montreal, Quebec                                                                        5148934050  ploo432@hotmail.com                                07/22/1992 02/14/2010 
+  260413685 m      Borodovski                Andrew                    3678 Ave Drummond, Montreal, Quebec                                                                  5064556072  andrewisdaman@yandex.ru                            02/21/1992 02/14/2013 
+  260402399 m      Gorshkov                  Maxim                     456 Ave Pins O, Montreal, Quebec                                                                     5148825726  maxim.gorshkov@gmail.com                           06/17/1992 02/15/2013 
+  260457690 f      Kwan                      Saskia                    3545 Ave Durocher, Montreal, Quebec                                                                  5142237654  skwan@yahoo.com                                    12/08/1992 02/15/2009 
+  260411234 m      Wright                    William                   456 Ave Pins O, Montreal, Quebec
+  260414521 m      Bourne                    Jason                     29 Rue Bagg, Montreal, Quebec
+  260415332 m      Reed                      Connor                    900 Ave Sherbrooke, Montreal, Quebec                                                                 5144768900  creed@hotmail.com                                  06/01/1992 02/15/2013 
+  260444112 f      Gerner                    Teresa                    3545 Ave Durocher,Montreal, Quebec                                                                   5142204321  ilovesoccer@hotmail.com                            01/15/1992 02/15/2006 
+  260479834 f      Campbell                  Carolyn                   3515 Ave Durocher, Montreal, Quebec                                                                  5146687333  ccampbell@yahoo.com                                06/30/1992 02/15/2013 
+  260403842 m      Silver                    Alec                      29 Rue Bagg, Montreal, Quebec
+  260469814 m      Jackson                   John                      29 Rue Bagg, Montreal, Quebec
+  
+  11 record(s) selected.
+  
+--Player table after deletion:
+delete from player where pid in(select player.pid from player, playsfor where player.pid = playsfor.pid except select Player.pid from player, playsfor where player.pid = playsfor.pid and year (current_timestamp) - syear < 2)
+DB20000I  The SQL command completed successfully.
+
+select * from player
+
+PID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- -----------
+  260409387 m      McCorriston               Jamie                     29 Rue Bagg, Montreal, Quebec                                                                        5148934050  ploo432@hotmail.com                                07/22/1992 02/14/2010 
+  260413685 m      Borodovski                Andrew                    3678 Ave Drummond, Montreal, Quebec                                                                  5064556072  andrewisdaman@yandex.ru                            02/21/1992 02/14/2013 
+  260402399 m      Gorshkov                  Maxim                     456 Ave Pins O, Montreal, Quebec                                                                     5148825726  maxim.gorshkov@gmail.com                           06/17/1992 02/15/2013 
+  260457690 f      Kwan                      Saskia                    3545 Ave Durocher, Montreal, Quebec                                                                  5142237654  skwan@yahoo.com                                    12/08/1992 02/15/2009 
+  260411234 m      Wright                    William                   456 Ave Pins O, Montreal, Quebec                                                                     5147978866  lunchy01@gmail.com                                 04/17/1992 02/15/2013 
+  260415332 m      Reed                      Connor                    900 Ave Sherbrooke, Montreal, Quebec                                                                 5144768900  creed@hotmail.com                                  06/01/1992 02/15/2013 
+  260444112 f      Gerner                    Teresa                    3545 Ave Durocher,Montreal, Quebec                                                                   5142204321  ilovesoccer@hotmail.com                            01/15/1992 02/15/2006 
+  260479834 f      Campbell                  Carolyn                   3515 Ave Durocher, Montreal, Quebec                                                                  5146687333  ccampbell@yahoo.com                                06/30/1992 02/15/2013 
+  260403842 m      Silver                    Alec                      29 Rue Bagg, Montreal, Quebec                                                                        5145768991  barhawkobama@msn.com                               12/08/1991 02/16/2008 
+
+  9 record(s) selected.
+  
+--Update Statement
+--Increases the salary of all coordinators by 10%
+update coordinator set yearlysal = yearlysal * 1.1
+
+--Coordinators before update:
+select * from coordinator
+
+CID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED YEARLYSAL  
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- ----------- -----------
+     540023 m      Karnofsky                 Perry                     3915 Ave St. Denis, Montreal, Quebec                                                                 5143982600  perry.karnofsky@mcgill.ca                          05/03/1976 02/16/2013        64000
+     543451 m      Pantonella                Marco                     3701 Ave St. Urbain, Montreal, Quebec                                                                5143982408  marco.pantonella@mcgill.ca                         11/21/1985 02/16/2013        36000
+     548927 f      Smith                     Mary                      4344 Ave Parc, Montreal, Quebec                                                                      5143982791  smith.mary@mcgill.ca                               09/06/1967 02/16/2013        62000
+
+  3 record(s) selected.
+  
+--Coordinators after update:
+pdate coordinator set yearlysal = yearlysal * 1.1
+DB20000I  The SQL command completed successfully.
+
+select * from coordinator
+
+CID         GENDER LNAME                     FNAME                     ADDRESS                                                                                              PHONENUMBER EMAIL                                              BIRTHDAY   DATECREATED YEARLYSAL  
+----------- ------ ------------------------- ------------------------- ---------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------- ---------- ----------- -----------
+     540023 m      Karnofsky                 Perry                     3915 Ave St. Denis, Montreal, Quebec                                                                 5143982600  perry.karnofsky@mcgill.ca                          05/03/1976 02/16/2013        70400
+     543451 m      Pantonella                Marco                     3701 Ave St. Urbain, Montreal, Quebec                                                                5143982408  marco.pantonella@mcgill.ca                         11/21/1985 02/16/2013        39600
+     548927 f      Smith                     Mary                      4344 Ave Parc, Montreal, Quebec                                                                      5143982791  smith.mary@mcgill.ca                               09/06/1967 02/16/2013        68200
+
+  3 record(s) selected.
+  
+--Insert statement
+--After an announcement was added saying that the pool is closed, this statement adds this announcement to the
+--receives table, in association with each water polo team captain whose team had a game that day (2013-02-17):
+insert into receives (msgid, cptnid) with games(gtime, gdate, sport, llevel) as (select * from game where gdate = (select sent from announcement where msgid = 1009999)), teams(name1, syear1, sport1, llevel1, name2, syear2, sport2, llevel2) as (select distinct name1, syear1, sport1, llevel1, name2, syear2, sport2, llevel2 from games, hasteams where games.gdate = hasteams.gdate and games.sport = hasteams.sport and games.sport = 'Innertube Water Polo') select distinct msgid, cptnid from announcement, registers, teams where ((name1 = name and syear1 = syear and sport1 = sport and llevel1 = llevel) or (name2 = name and syear2 = syear and sport2 = sport and llevel2 = llevel)) and msgid = 1009999
+
+--The hasteams table:
+select * from hasteams
+
+GTIME    GDATE      SPORT                          LLEVEL NAME1                          SYEAR1      SPORT1                         LLEVEL1 NAME2                          SYEAR2      SPORT2                         LLEVEL2
+-------- ---------- ------------------------------ ------ ------------------------------ ----------- ------------------------------ ------- ------------------------------ ----------- ------------------------------ -------
+21:00:00 09/20/2012 Ice Hockey                     MB     Goon Squad                            2012 Ice Hockey                     MC      Cool Runnings                         2012 Ice Hockey                     MC     
+16:00:00 02/17/2013 Innertube Water Polo           CRA    Team1                                 2013 Innertube Water Polo           CRA     Team2                                 2013 Innertube Water Polo           CRA    
+18:00:00 02/17/2013 Innertube Water Polo           CRB    In The Hole                           2013 Innertube Water Polo           CRB     Class and Pizzaz                      2013 Innertube Water Polo           CRB    
+20:00:00 02/17/2013 Innertube Water Polo           CRB    Marco Pullouts                        2013 Innertube Water Polo           CRB     Class and Pizzaz                      2013 Innertube Water Polo           CRB    
+22:30:00 02/21/2013 Indoor Soccer                  WB     soccority                             2013 Indoor Soccer                  WB      FC Girls                              2013 Indoor Soccer                  WB     
+20:00:00 02/28/2013 2v2 Soccer                     CRA    Bar Down                              2013 2v2 Soccer                     CRA     Class and Pizzaz                      2013 2v2 Soccer                     CRA    
+18:30:00 03/14/2013 2v2 Soccer                     MB     Far Post                              2012 2v2 Soccer                     MB      Pretty in Pink                        2012 2v2 Soccer                     MB     
+
+  7 record(s) selected.
+  
+--The receives table before the insert:
+select * from receives
+
+MSGID       CPTNID     
+----------- -----------
+    1001499   260403842
+    1002746   260409387
+    1002746   260413685
+    1003268   260409387
+    1003268   260411234
+    1003268   260413685
+    1003279   260409387
+    1004560   260403842
+    1004560   260413685
+
+  9 record(s) selected.
+  
+--The receives table after insertion:
+insert into receives (msgid, cptnid) with games(gtime, gdate, sport, llevel) as (select * from game where gdate = (select sent from announcement where msgid = 1009999)), teams(name1, syear1, sport1, llevel1, name2, syear2, sport2, llevel2) as (select distinct name1, syear1, sport1, llevel1, name2, syear2, sport2, llevel2 from games, hasteams where games.gdate = hasteams.gdate and games.sport = hasteams.sport and games.sport = 'Innertube Water Polo') select distinct msgid, cptnid from announcement, registers, teams where ((name1 = name and syear1 = syear and sport1 = sport and llevel1 = llevel) or (name2 = name and syear2 = syear and sport2 = sport and llevel2 = llevel)) and msgid = 1009999
+DB20000I  The SQL command completed successfully.
+
+select * from receives
+
+MSGID       CPTNID     
+----------- -----------
+    1001499   260403842
+    1002746   260409387
+    1002746   260413685
+    1003268   260409387
+    1003268   260411234
+    1003268   260413685
+    1003279   260409387
+    1004560   260403842
+    1004560   260413685
+    1009999   260403842
+    1009999   260409387
+    1009999   260411234
+    1009999   260413685
+    1009999   260457690
+
+  14 record(s) selected.
+--Note: 5 teams were playing that day, and so 5 captains received the announcement.
+
+--Views
+--Making view #1
+--Create a view with an official id, first and last name, as well as hourly salary for officials paid more that $10/hr.
+create view official_view as select oid, fname, lname , hourlysal from official where hourlysal > 10
+--Query all officials in the view, return id, first name, last name, hourly salary
+select * from official_view
+
+--Result:
+create view official_view as select oid, fname, lname , hourlysal from official where hourlysal > 10
+DB20000I  The SQL command completed successfully.
+
+select * from official_view
+
+OID         FNAME                     LNAME                     HOURLYSAL  
+----------- ------------------------- ------------------------- -----------
+     325471 Shannon                   Johnson                            12
+     335993 Katherine                 Goldman                            14
+     336453 Brandon                   Jones                              16
+     322002 Zara                      Saleh                              12
+
+  4 record(s) selected.
+  
+--Making view #2
+create view upcoming_games as select * from game where year(gdate) > 2012
+--Query all games that will be played in the future (tomorrow or later)
+select * from upcoming_games where (month(current_timestamp) < month (gdate)) OR (month(current_timestamp) = month(gdate) AND day(current_timestamp) < day(gdate))
+
+--Result:
+create view upcoming_games as select * from game where year(gdate) > 2012
+DB20000I  The SQL command completed successfully.
+
+select * from upcoming_games where (month(current_timestamp) < month (gdate)) OR (month(current_timestamp) = month(gdate) AND day(current_timestamp) < day(gdate))
+
+GTIME    GDATE      SPORT                          LLEVEL
+-------- ---------- ------------------------------ ------
+18:30:00 03/14/2013 2v2 Soccer                     MB    
+20:00:00 02/28/2013 2v2 Soccer                     CRA   
+22:30:00 02/21/2013 Indoor Soccer                  WB    
+
+  3 record(s) selected.
+  
+--Constraints:
+--The following CREATE statements have the check constrains over some relations: Player, Coordinator, Official, Announcement, and Officiates tables
+--Each table create is followed by the successful declaration
+create table Player (pid int not null primary key, gender char(1) not null, lname varchar(25) not null, fname varchar(25) not null, address varchar(100) not null, phonenumber char(10) not null, email varchar(50) not null, birthday date not null, datecreated date not null, check(pid>260400000 and pid<260500000 and (gender = 'm' or gender = 'f')))
+DB20000I  The SQL command completed successfully.
+
+create table Captain (cptnid int not null primary key, foreign key (cptnid) references Player (pid) on delete cascade, baddress varchar(100) not null, cardnumber char(16) not null, cardholder varchar(50) not null, carddate date not null, cardtype varchar(25) not null)
+DB20000I  The SQL command completed successfully.
+
+create table Coordinator (cid int not null primary key, gender char(1) not null, lname varchar(25) not null, fname varchar(25) not null, address varchar(100) not null, phonenumber char(10) not null, email varchar(50) not null, birthday date not null, datecreated date not null, yearlysal int not null, check(cid>540000 and cid<550000 and (gender = 'm' or gender = 'f')))
+DB20000I  The SQL command completed successfully.
+
+create table Official (oid int not null primary key, gender char(1) not null, lname varchar(25) not null, fname varchar(25) not null, address varchar(100) not null, phonenumber char(10) not null, email varchar(50) not null, birthday date not null, datecreated date not null, hourlysal int not null, check(oid>300000 and oid<400000 and (gender = 'm' or gender = 'f')))
+DB20000I  The SQL command completed successfully.
+
+create table League (sport varchar(30) not null, llevel varchar(3) not null, minplayers int not null, maxplayers int not null, minteams int not null, primary key (sport, llevel))
+DB20000I  The SQL command completed successfully.
+
+create table Season (syear int not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (sport, llevel) references League (sport, llevel) on delete cascade, regdeadline date not null, maxteams int not null, primary key (syear, sport, llevel))
+DB20000I  The SQL command completed successfully.
+
+create table Team (name varchar(30) not null, syear int not null, sport varchar(30) not null, llevel varchar(3) not null, primary key (name, syear, sport, llevel), foreign key(syear, sport, llevel) references Season(syear, sport, llevel) on delete cascade)
+DB20000I  The SQL command completed successfully.
+
+create table Game (gtime time not null, gdate date not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (sport, llevel) references League (sport, llevel) on delete cascade, primary key (gtime, gdate, sport, llevel))
+DB20000I  The SQL command completed successfully.
+
+create table Announcement (msgid int not null primary key, msg varchar(1000) not null, sent date not null, check(msgid>1000000 and msgid<2000000))
+DB20000I  The SQL command completed successfully.
+
+create table Sends (msgid int not null, foreign key (msgid) references Announcement (msgid) on delete cascade, cid int not null, foreign key (cid) references Coordinator (cid) on delete cascade, primary key (msgid, cid))
+DB20000I  The SQL command completed successfully.
+
+create table Receives (msgid int not null, foreign key (msgid) references Announcement (msgid) on delete cascade, cptnid int not null, foreign key (cptnid) references Captain (cptnid) on delete cascade, primary key (msgid, cptnid))
+DB20000I  The SQL command completed successfully.
+
+create table HasTeams (gtime time not null, gdate date not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (gtime, gdate, sport, llevel) references Game(gtime, gdate, sport, llevel) on delete cascade, name1 varchar(30) not null, syear1 int not null, sport1 varchar(30) not null, llevel1 char(3) not null, foreign key (name1, syear1, sport1, llevel1) references Team (name, syear, sport, llevel) on delete cascade, name2 varchar(30) not null, syear2 int not null, sport2 varchar(30) not null, llevel2 char(3) not null, foreign key (name2, syear2, sport2, llevel2) references Team (name, syear, sport, llevel) on delete cascade, primary key (gdate, gtime, sport, llevel, name1, syear1, sport1, llevel1, name2, syear2, sport2, llevel2))
+DB20000I  The SQL command completed successfully.
+
+create table PlaysFor (pid int not null, foreign key (pid) references Player (pid) on delete cascade, name varchar(30) not null, syear int not null, sport varchar(30) not null, llevel char(3) not null, foreign key (name, syear, sport, llevel) references Team (name, syear, sport, llevel) on delete cascade, primary key (pid, name, syear, sport, llevel))
+DB20000I  The SQL command completed successfully.
+
+create table Creates (cid int not null, foreign key (cid) references Coordinator (cid) on delete cascade, syear int not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (syear, sport, llevel) references Season (syear, sport, llevel) on delete cascade, primary key (cid, syear, sport, llevel))
+DB20000I  The SQL command completed successfully.
+
+create table Registers (cptnid int not null, foreign key (cptnid) references Captain (cptnid) on delete cascade, name varchar(30) not null, syear int not null, sport varchar(30) not null, llevel char(3) not null, foreign key (name, syear, sport, llevel) references Team (name, syear, sport, llevel) on delete cascade, cost int not null, primary key (name, syear, sport, llevel))
+DB20000I  The SQL command completed successfully.
+
+create table Officiates (oid int not null, gtime time not null, gdate date not null, sport varchar(30) not null, llevel varchar(3) not null, foreign key (gtime, gdate, sport, llevel) references Game(gtime, gdate, sport, llevel) on delete cascade, role varchar(20) not null, primary key (oid, gdate, gtime, sport, llevel), check(role = 'referee' or role = 'timekeeper' or role = 'referee, timekeeper' or role = 'timekeeper, referee'))
+DB20000I  The SQL command completed successfully.
+
+
+--Constraint Violation:
+--Below are two inserts which violate the check constrains and how DB2 responds to the modifications.
+insert into Player values (123456789, 'm', 'McCorriston', 'Jamie', '29 Rue Bagg, Montreal, Quebec', '5148934050', 'ploo432@hotmail.com', '1992-07-22', '2013-02-14')
+DB21034E  The command was processed as an SQL statement because it was not a 
+valid Command Line Processor command.  During SQL processing it returned:
+SQL0545N  The requested operation is not allowed because a row does not 
+satisfy the check constraint "ABOROD2.PLAYER.SQL130218181803340".  
+SQLSTATE=23513
+
+insert into Officiates values (336453, '20:00:00', '2013-02-28', '2v2 Soccer', 'CRA', 'refeere')
+DB21034E  The command was processed as an SQL statement because it was not a 
+valid Command Line Processor command.  During SQL processing it returned:
+SQL0545N  The requested operation is not allowed because a row does not 
+satisfy the check constraint "ABOROD2.OFFICIATES.SQL130218181808990".  
+SQLSTATE=23513
+

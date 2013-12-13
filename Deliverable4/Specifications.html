@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+<div class="topheading">
+  <h1>Programming Project 4: Hadoop and Pig</h1>
+<h4>Due date: Monday, April 8, 17:00 </h4>
+</div>
+
+Note: This deliverable is nearly identical to Homework 6 of the Fall
+2012 term of CSE 344 of University of Washington (<a href="http://www.cs.washington.edu/education/courses/cse344/12au/hw/hw6/hw6.html"> http://www.cs.washington.edu/education/courses/cse344/12au/hw/hw6/hw6.html)</a>
+
+
+<p><b>TURN IN INSTRUCTIONS:</b> Turn in eleven files
+<span style="color: red;">What to turn is marked in red</span></p>
+<br/>
+
+<h2>Problem 0: Setup your Pig Cluster</h2>
+<ol>
+<li><strong>AMAZON CODES:</strong> You should have received your Amazon code by email. Please email the TA or instructor if you did not get the code. <p></p></li>
+<li><p> Follow the instructions given in AWSsetupandusage in the P4
+module of mycourses to setup the cluster. NOTE: It will take you a good <strong>60 minutes</strong>
+ to go through all these instructions without even trying to run 
+example.pig at the end. But they are worth it. You are learning how to 
+use the Amazon cloud, which is by far the most popular cloud today! At 
+the end, the instructions will refer to <em>example.pig</em>. This is the name of the sample program that we will run in the next step.</p></li>
+<li> Download the project archive p4.tar.gz from the P4 module on
+mycourses.<p> 
+</p></li><li> You will find example.pig in p4.tar.gz.
+<p>example.pig is a
+  Pig Latin script that loads and parses the billion triple dataset that we will use in this assignment into triples:
+  (subject, predicate, object). Then it groups the triples by their
+  object attribute and sorts them in descending order based on the count
+  of tuple in each group.</p></li>
+<li><p>Follow the README.txt: it provides more information on how to run the sample program called example.pig. </p></li>
+<li> There is nothing to turn in for Problem 0</li>
+</ol>
+
+<h2>Useful Links</h2>
+<p><a href="http://wiki.apache.org/pig/PigLatin" target="_blank">Pig
+Latin wiki page</a>
+<p><a href="http://pig.apache.org/docs/r0.7.0/index.html" target="_blank">Hadoop&#39;s Pig Latin Documentation</a>
+
+</p><h2>Project Description</h2>
+<p>As we discussed in class, we live in a &quot;big data&quot; era: our society is
+ generating data at an unprecedented scale and rate. In fact, we are 
+generating so much data that we are unable to take advantage of most of 
+that data. This is quite unfortunate.</p>
+<p>A large fraction of this data takes the form of gigantic graphs: A 
+social network is a graph where vertices represent people and edges 
+represent friendships. The Web is a graph where vertices represent pages
+ and edges represent hyperlinks between pages. These graphs are very 
+large and are difficult to study. One of the key challenges is that many
+ graph algorithms are difficult to parallelize.</p>
+<p>In this assignment, we will perform some basic analysis over one such
+ graph. This graph is representative of other important graphs. The 
+graph that we will study comes from the <a href="http://km.aifb.kit.edu/projects/btc-2010/" target="_new">billion triple dataset</a>.
+ This is an RDF dataset that contains a billion (add or take a few) 
+triples from the Semantic Web. Some Webpages on the Web have a 
+machine-readable description of their semantics stored as RDF triples: 
+our dataset was obtained by a crawler that extracted all RDF triples 
+from the Web.</p>
+<p>RDF data is represented in triples of the form:</p>
+<pre>		subject  predicate  object  [context]
+</pre> 
+<p>The [context] is not part of the triple, but is sometimes added to tell where the data is coming from.    For example, file <code>btc-2010-chunk-200</code> contains the two &quot;triples&quot; (they are actually &quot;quads&quot; because they have the context too):</p>
+<pre>&lt;http://www.last.fm/user/ForgottenSound&gt; &lt;http://xmlns.com/foaf/0.1/nick&gt; &quot;ForgottenSound&quot; &lt;http://rdf.opiumfield.com/lastfm/friends/life-exe&gt; .<br/>&lt;http://dblp.l3s.de/d2r/resource/publications/journals/cg/WestermannH96&gt; &lt;http://xmlns.com/foaf/0.1/maker&gt; &lt;http://dblp.l3s.de/d2r/resource/authors/Birgit_Westermann&gt; &lt;http://dblp.l3s.de/d2r/data/publications/journals/cg/WestermannH96&gt; .
+</pre>
+<p><br/> 
+The first says that Webpage 
+&lt;http://www.last.fm/user/ForgottenSound&gt; has the nickname 
+&quot;ForgottenSound&quot;; the second describes the maker of another webpage. <code>foaf</code> stands for <em>Friend of a Friend.</em>
+ Confused ? You don&#39;t need to know what they mean; some of the many 
+triples refer to music, http://dbtune.org, others refer to company 
+relationships, etc. For our purpose, these triples are just a large 
+collection of triples. There were 317 2GB files in the <a href="http://km.aifb.kit.edu/projects/btc-2010/" target="_new">billion triple dataset</a>
+ when we downloaded it. We uploaded them to Amazon&#39;s Web Services in
+S3. You will work with a fairly small subset of them.
+<br/>
+The original homework at Washington let students work on a 550 GB data
+set. If you want to try it out, go to <a href="">
+http://www.cs.washington.edu/education/courses/cse344/12au/hw/hw6/hw6.html</a>
+to see Problem 4 in the original homework at the University of
+Washington.
+
+<p>This full graph is similar in size to the <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.33.44&amp;rep=rep1&amp;type=pdf">web graph</a>.
+  
+  As part of this assignment, we will compute the out-degree of each 
+node in the graph. The out-degree of a node is the number of edges 
+coming out of the node. This is an important property. If a graph is 
+random, the out-degree of nodes will follow an exponential distribution 
+(i.e., the number of nodes with degree d should be exp(- c*d) for some 
+constant c). We will write the script in Problem 2, where we will run it
+ on a fairly small data sample. What is very interesting is that on
+the full graph we find the 
+distribution of node out-degrees
+  to follow a power law   (1/d^k for some constant k and it will look 
+roughly like a straight-line on a graph with logarithmic scales on both 
+the x and y axes) instead of an exponential distribution. We might not
+be able to make the same observation with the small data set we are
+using. If you look at
+ Figures 2 and 3 in <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.33.44&amp;rep=rep1&amp;type=pdf">this paper</a>,
+ you will find that the degrees of web pages on the web, in general, 
+follow a similar power law distribution. This is very interesting 
+because it means that the Web and the semantic Web cannot be modeled as 
+random graphs. They need a different theoretical model. </p>
+<p>In Problem 3, we will look for paths of length 2 in a sub-graph of 
+our big graph. This is a simple version of more complex algorithms that 
+try to measure the diameter of a graph or try to extract other related 
+properties.
+  
+</p>
+<p>You will access the following datasets in S3, throught pig (using the LOAD command -- see example.pig)</p>
+<p><span class="style2">s3n://mcgill-comp421-proj4-code/comp421-test-file -- 250KB</span>. This is used in example.pig. Always use this file for debugging your scripts first! </p>
+<p><span class="style3">s3n://mcgill-comp421-proj4-code/btc-2010-chunk-000 -- 2GB</span>. You will use this dataset in questions 1, 2, 3..</p>
+
+
+<p>It is not necessary for the assignment, but if you want to inspect 
+the files directly, you can access them over the Internet using urls of 
+the following form:</p>
+<pre><a href="http://s3.amazonaws.com/mcgill-comp421-proj4/btc-2010-chunk-000">http://s3.amazonaws.com/mcgill-comp421-proj4/btc-2010-chunk-000</a></pre>
+<pre><a href="http://s3.amazonaws.com/mcgill-comp421-proj4/comp421-test-file">&quot;http://s3.amazonaws.com/mcgill-comp421-proj4/comp421-test-file</a></pre>
+<p>
+
+<br/>
+</p><h2>Problem 1:  Getting started with Pig on chunk-000</h2>
+<p>
+<span style="color: blue;">Note: You will need to copy the output of your
+ Pig scripts from the Hadoop filesystem for all problems. You can find 
+instructions to do this in the AWSsetupandusage page in the P4
+module of mycourses (see managing results) </span>
+</p>
+<p> Modify <tt>example.pig</tt> to use the file
+<tt>s3n://mcgill-comp421-proj4-code/btc-2010-chunk-000</tt> instead of
+<tt> s3n://mcgill-comp421-proj4-code/comp421-test-file</tt>. Run on an AWS cluster with <strong>10 nodes</strong>, and answer the following questions 
+  (also see hints below). </p>
+
+<p> <b>1.1</b> How many MapReduce jobs are generated by
+  example.pig? </p>
+<p> <b>1.2</b> How many reduce tasks are within the first
+  MapReduce job? How many reduce tasks are within later MapReduce jobs? </p>
+<p> <b>1.3</b> How long does each job take? How long does the entire script take? </p>
+<p> <b>1.4</b> What is the schema of the tuples after each of the following commands in example.pig?</p>
+<ul>
+  <li>After the command <tt>ntriples
+    = ...</tt> </li>
+  <li>After the command <tt>objects
+      = ...</tt></li>
+  <li>After the command <tt>count_by_object
+        = ...</tt></li>
+</ul>
+<p> <b>Hint 1</b>: Use the job tracker described in AWSsetupandusage in the P4
+module of mycourses to see the number of map and reduce tasks for your MapReduce jobs. </p>
+<p> <b> Hint 2:</b> To see the schema for intermediate
+  results, you can use Pig&#39;s interactive command line client <tt>grunt</tt>,
+  which you can launch by running Pig without specifying an input script
+  on the command line. When using <tt>grunt</tt>, a command that you may want to know about is <a href="http://pig.apache.org/docs/r0.7.0/piglatin_ref2.html#DESCRIBE"><tt>describe</tt></a> .
+  To see a list of other commands, type <tt>help</tt>.</p>
+<p> <b>What you need to turn in:</b><br/>
+  <span style="color: red;"> Run your program on <b>btc-2010-chunk-000</b>, and submit your answers to problems
+    1.1 - 1.4 in a file named <tt> problem1-answers.txt</tt>. </span></p>
+<h2>&#160;</h2>
+<h2>Problem 2A: Compute a Histogram on  comp421-test-file</h2>
+<p><strong>Using the &#39;comp421-test-file&#39; file</strong>, write a Pig 
+script that groups tuples by the
+  subject column, and creates/stores histogram data showing the 
+distribution of counts per subject, then generate a scatter-plot of this
+ histogram. The histogram consists of:</p>
+<ul>
+  <li>The x-axis is the counts associated with the subjects, and </li>
+  <li>The y-axis is the total number of subjects associated with each particular count.</li>
+</ul>
+<p> So, for each point (x,y) that we generate, we mean to say that y subjects each
+  had x tuples associated with them after we group by subject.
+  Run your script on an AWS cluster and record the mapreduce jobs information
+  (cluster size, # MapReduce jobs, runtimes, # reduce tasks per job).
+  Copy the results to your local machine. Generate a log-log scatter-plot graph, using either <code>excel</code> or <code>gnuplot</code> to plot the histogram points. Save, and turn in, the plot in some image format, e.g. jpeg or png.</p>
+<p> A few comments to help you get started: </p>
+<ul>
+  <li>We expect that your script will (1) group the input data by 
+subject and count the tuples associated with each subject then (2) group
+ the results by these intermediate counts (x-axis values) and compute 
+the final counts (y-axis values). </li>
+  <li>To get more familiar with the Pig Latin commands, we suggest that
+    you also take a look at the <a href="http://wiki.apache.org/pig/PigLatin" target="_blank">Pig Latin Wiki Page</a>. </li>
+  <li>Copying files. After you run your job on the cluster, you will need to
+    copyToLocal (i.e. move the files to your local directory) and &quot;cat&quot;
+    together all files named <tt>part-*.</tt> Once the results have been cat-ed together, copy them
+    back to your local machine. Alternatively, you can use the &quot;hadoop
+  dfs -getmerge&quot; command. See AWSsetupandusage in the P4
+module of mycourses. </li>
+  <li>Generating the plot. If you use excel, then: (a) import the 
+tab-separated text file in excel, (b) generate a scatter-plot, (c) click
+ on each axis and make it logarithmic. If you use <code>gnuplot</code>, we have  prepared a script which makes it easier
+    for you to run <code>gnuplot</code>. Use the files plot.sh and plot.gnu as follows:
+    <pre>chmod +x plot.sh
+./plot.sh PIG_RESULTS_FILE
+    </pre>
+    The script generates a PNG image of the plot in your current directory.
+    Your PIG_RESULTS_FILE needs to be tab-separated and have two columns, x
+    and y. The data also needs to be (numerically) sorted by x. You can sort either using Pig or simply run
+    Unix&#39; <tt>sort -n input &gt; output</tt> after your
+  job has completed (by default sorting in Pig is alphabetical).</li>
+</ul>
+<p><strong>DEBUGGING</strong>:</p>
+<ul>
+  <li>Since you are using the small test file in this question, you can run a small, <strong>1-node cluster</strong>. </li>
+  <li>In this question, we are debugging the script. The output of this 
+question is thus not going to be terribly interesting. In fact, your 
+scatterplot should  only have two points: (1,1) and (3,333). </li>
+  <li>To debug a Pig Latin script, try to run Pig as follows:</li>
+
+<blockquote>
+  <pre>pig -x local  </pre>
+  <p>Run all commands as you normally would, except for store. You need to store your results locally:</p>
+  <pre>store my_final_output into &#39;/tmp/finaloutput&#39; using PigStorag()</pre>
+</blockquote>
+<li>Once you are done debugging in local mode, try to run your script by
+ issuing real MapReduce jobs. That is run with &quot;pig&quot; instead of &quot;pig -x 
+local&quot; (remember to change the store command). </li>
+</ul>
+<p> <b>What you need to turn in:</b> Nothing. This was a debug step. <br/>
+</p>
+<h2>Problem 2B: Compute a Histogram on  chunk-000</h2>
+<p>Now run your script from Problem 2A on &#39;btc-2010-chunk-000&#39; file. Please use a <strong>5-node cluster</strong>. </p>
+<p>Note: this script took about 21 minutes with 5 nodes.</p>
+<p><b>What you need to turn in:</b><br/>
+  <span style="color: red;"> Run your program on <b>btc-2010-chunk-000</b>, and submit four files: (a) your Pig program in <tt>problem2.pig</tt>.
+    (b) your scatter-plot in <code>problem2.png,</code> or <code>problem2.jpeg</code> (or some other picture format), (c) your 
+computed result file (<tt>problem2-results.txt</tt>), (d) your MapReduce jobs information (<tt>problem2-answers.txt</tt>)</span>.</p>
+<h2>&#160;</h2>
+<h2>Problem 3: Compute a Join on chunk-000</h2>
+<p>In  this problem we will consider the subgraph consisting of triples whose subject matches rdfabout.com: for that, filter on <code>subject matches &#39;.*rdfabout\\.com.*&#39;</code>.
+ Find all chains of lengths 2 in this subgraph. More precisely, return 
+all sextuples (subject, predicate, object, subject2, predicate2, 
+object2) where object=subject2. 
+</p><p>Note: Newer versions of Pig will automatically drop the duplicate
+ column in the join output.In that case, you do NOT need to return the 
+sixth column.
+</p><p>Suggestions on how to proceed:
+</p><ul>
+<li>First filter the data so you only have tuples whose subject matches &#39;rdfabout.com&#39;.</li>
+<li>Make another copy of the filtered collection (it&#39;s best to re-label the subject,
+predicate, and objects, for example to subject2, predicate2, object2).</li>
+<li>Now join the two copies:
+<ul>
+<li>the first copy of the &#39;rdfabout.com&#39; collection should match on object.</li>
+<li>the second copy of the &#39;rdfabout.com&#39; collection should match on subject2.</li>
+</ul>
+</li>
+<li>Remove duplicate tuples from the result of the join</li>
+<li>Order the results by the predicate from the first copy</li>
+</ul>
+<p>As above, first debug your script for this problem using the test 
+file. Once your script is debugged, then run it on the bigger file 
+&#39;btc-2010-chunk-000&#39;. While debugging on the test file, make the 
+following two changes: </p>
+<p>1) Use the following filter </p>
+<p><code>subject matches &#39;.*business.*&#39;</code> </p>
+<p>2) Change the join predicate to be subject=subject2 
+</p><p>Otherwise, you will not get any results. 
+</p><p>Once you are done debugging, change the filter and the join 
+condition and run this script on an AWS cluster with as many nodes as 
+you like and on the bigger file &#39;btc-2010-chunk-000&#39;. Add a comment to 
+your pig script
+  describing the number of nodes you used and how long it took your 
+script to run.
+</p>
+<p></p>
+<p>Note: this script took about 18 minutes with 10 nodes.</p>
+<p> <b>What you need to turn in:</b><br/>
+  <span style="color: red;">Run your program on <b>btc-2010-chunk-000</b>, and submit two files: (a) your Pig program in <tt>problem3.pig</tt>, and (b) your
+    computed result file (<tt>problem3-results.txt</tt>). </span></p>
+<h2>&#160;</h2>
+
+
+
+</p></p><script type="text/javascript" src="/d2l/common/math/MathML.js?v=10.1.0.425-27 "></script><script type="text/javascript">D2LMathML.DesktopInit('/d2l/common/mathjax/2.0.1/MathJax.js?config=MML_HTMLorMML','/d2l/common/mathjax/2.0.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML');</script></body></html>

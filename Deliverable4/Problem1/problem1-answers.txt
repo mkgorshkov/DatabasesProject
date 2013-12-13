@@ -1,0 +1,27 @@
+Maxim Gorshkov (260397155)
+James McCorriston (260409387)
+Andrew Borodovski (260413685)
+
+Problem 1
+
+1.1
+3 MapReduce jobs generated.
+
+1.2
+50 Reduce tasks.
+There is 1 reduce task in the second job and 50 reduce tasks in the third job.
+
+1.3
+Job 1 - 4min 16sec
+Job 2 - 54sec
+Job 3 - 2min 21sec
+Total time - 8min 59sec
+
+1.4
+ntriples: {subject: chararray,predicate: chararray,object: chararray}
+
+objects: {group: chararray,ntriples: {(subject: chararray,predicate: chararray,object: chararray)}}
+
+count_by_object_ordered: {group: chararray,count: long}
+
+
